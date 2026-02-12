@@ -282,7 +282,7 @@ const SettingsView: React.FC = () => {
 
     const [availableModels, setAvailableModels] = useState<string[]>(() => {
         const saved = userScopeService.scopedGet('available_models');
-        const geminiDefaults = ['DYNAMIC', 'gemini-3-pro-preview', 'gemini-3-flash-preview'];
+        const geminiDefaults = ['DYNAMIC', 'gemini-3-pro', 'gemini-3-flash'];
         const orModels = OPENROUTER_MODELS.map(m => m.id);
         const oaiModels = OPENAI_MODELS.map(m => m.id);
         const models = saved ? JSON.parse(saved) : [...geminiDefaults, ...oaiModels, ...orModels];
