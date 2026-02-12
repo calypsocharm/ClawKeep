@@ -290,3 +290,6 @@ export const api = {
     setOnAuthFailure,
     get isOnline() { return isOnline; }
 };
+
+// Alias for backward compat
+export const apiService = api;

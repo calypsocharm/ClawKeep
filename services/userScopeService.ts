@@ -68,6 +68,15 @@ class UserScopeService {
     scopedRemove(baseKey: string): void {
         localStorage.removeItem(this.scopedKey(baseKey));
     }
+
+    /** Alias for setCurrentUserId — used by App.tsx */
+    setUserId(userId: string | null) {
+        if (userId) {
+            this.setCurrentUserId(userId);
+        } else {
+            this.clearUserScope();
+        }
+    }
 }
 
 export const userScopeService = new UserScopeService();

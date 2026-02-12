@@ -8,7 +8,6 @@ import { userScopeService } from '../services/userScopeService';
 import { gatewayService } from '../services/gatewayService';
 import { GoogleGenAI, Modality, LiveServerMessage } from '@google/genai';
 import { getApiKey, geminiService } from '../services/geminiService';
-import SmartSuggestions from './SmartSuggestions';
 
 interface OpenClawAgentProps {
   contextData: string;
@@ -782,7 +781,7 @@ const OpenClawAgent: React.FC<OpenClawAgentProps> = ({ contextData, onAction, sy
 
       {/* Input Area */}
       <div className="bg-slate-950/40 backdrop-blur-3xl border-t border-white/5 shrink-0">
-        {!isProcessing && <div className="max-w-full overflow-x-hidden"><SmartSuggestions activeView={activeView} onSelect={(prompt) => handleSend(prompt)} /></div>}
+
         <div className="p-4 pt-2">
           <div className="relative group flex items-end gap-2">
             <textarea

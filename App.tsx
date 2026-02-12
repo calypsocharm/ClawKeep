@@ -29,7 +29,7 @@ const StrategySandbox = lazy(() => import('./components/StrategySandbox'));
 
 // Sidebar with trading-focused nav
 import Sidebar from './components/Sidebar';
-import { BrowserPopup } from './components/BrowserPopup';
+import BrowserPopup from './components/BrowserPopup';
 import TelemetryPopup from './components/TelemetryPopup';
 
 // ─── Simple Trading App Views ─────────────────────────────
