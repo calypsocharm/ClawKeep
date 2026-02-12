@@ -1,0 +1,12 @@
+{
+  "name": "OpenCrabShell",
+  "description": "Your AI-powered personal shell. Pick a persona, plug in your keys, go.",
+  "version": "1.0.0",
+  "permissions": {
+    "allow-same-origin": true,
+    "allow-scripts": true,
+    "allow-popups": true,
+    "microphone": true,
+    "display-capture": true
+  }
+}

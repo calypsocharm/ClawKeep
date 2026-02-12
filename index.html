@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClawKeep</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      color-scheme: dark;
+      --glass-border: rgba(255, 255, 255, 0.06);
+      --glass-border-hover: rgba(255, 255, 255, 0.12);
+      --accent-rose: 244, 63, 94;
+      --accent-emerald: 16, 185, 129;
+      --accent-cyan: 6, 182, 212;
+      --accent-amber: 245, 158, 11;
+      /* Shell theming — set dynamically via JS */
+      --shell-accent: 346 77% 50%;
+      --shell-surface: 222 47% 11%;
+      --shell-glow: 346 77% 50%;
+    }
+
+    /* Style toggle classes — controlled by ShellConfig.styles */
+    html:not(.style-glass) .glass-panel {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+
+    html:not(.style-glow) .shadow-glow-lobster,
+    html:not(.style-glow) [class*="shadow-glow"] {
+      box-shadow: none !important;
+    }
+
+    html:not(.style-round) .glass-panel {
+      border-radius: 12px !important;
+    }
+
+    /* Global accent color integration */
+    ::-webkit-scrollbar-thumb:hover {
+      background: hsl(var(--shell-accent) / 0.25);
+    }
+
+    .accent-shell {
+      color: hsl(var(--shell-accent));
+    }
+
+    .bg-accent-shell {
+      background-color: hsl(var(--shell-accent));
+    }
+
+    .bg-accent-shell\/10 {
+      background-color: hsl(var(--shell-accent) / 0.1);
+    }
+
+    .border-accent-shell {
+      border-color: hsl(var(--shell-accent) / 0.2);
+    }
+
+    .glow-accent-shell {
+      box-shadow: 0 0 12px hsl(var(--shell-accent) / 0.3);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #020617;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Custom Scrollbar — thin, themed */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 100px;
+    }
+
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Background gradient */
+    @keyframes gradient-subtle {
+
+      0%,
+      100% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+    }
+
+    .animate-gradient-subtle {
+      background: linear-gradient(-45deg, #020617, #0f172a, hsl(var(--shell-surface)), #020617);
+      background-size: 400% 400%;
+      animation: gradient-subtle 25s ease infinite;
+    }
+
+    /* Float animation */
+    @keyframes float-minimal {
+
+      0%,
+      100% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-3px);
+      }
+    }
+
+    .animate-float-calm {
+      animation: float-minimal 6s ease-in-out infinite;
+    }
+
+    /* --- Glass Panels — softer, cleaner --- */
+    .glass-panel {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.55) 0%, rgba(2, 6, 23, 0.65) 100%);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.35);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+      min-width: 0;
+    }
+
+    .glass-panel:hover {
+      border-color: var(--glass-border-hover);
+      box-shadow: 0 6px 32px 0 rgba(0, 0, 0, 0.45);
+    }
+
+    /* Text glow utilities */
+    .text-glow-rose {
+      text-shadow: 0 0 20px rgba(var(--accent-rose), 0.35);
+    }
+
+    .text-glow-emerald {
+      text-shadow: 0 0 20px rgba(var(--accent-emerald), 0.35);
+    }
+
+    .text-glow-cyan {
+      text-shadow: 0 0 20px rgba(var(--accent-cyan), 0.35);
+    }
+
+    .text-glow-amber {
+      text-shadow: 0 0 20px rgba(var(--accent-amber), 0.35);
+    }
+
+    /* Slow spin for loaders */
+    @keyframes spin-slow {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .animate-spin-slow {
+      animation: spin-slow 3s linear infinite;
+    }
+
+    .thinking-ring-lobster {
+      background: conic-gradient(from 0deg, transparent 0%, #f43f5e 50%, transparent 100%);
+      animation: spin-slow 2s linear infinite;
+    }
+
+    .shadow-glow-lobster {
+      box-shadow: 0 0 20px rgba(244, 63, 94, 0.25);
+    }
+
+    .shadow-glow {
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+    }
+
+    /* Focus ring — consistent accent glow */
+    input:focus,
+    textarea:focus,
+    select:focus {
+      box-shadow: 0 0 0 2px rgba(var(--accent-rose), 0.15);
+    }
+
+    /* Prevent text overflow globally */
+    .tight-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Smooth layout transitions */
+    .view-transition {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Entry animations */
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-up {
+      animation: fadeSlideUp 0.5s ease-out both;
+    }
+
+    /* PDF Viewer styles */
+    .pdf-viewer-container {
+      background: #1e1e2e;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .pdf-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(0, 0, 0, 0.5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .pdf-toolbar button {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pdf-toolbar button:hover {
+      background: rgba(244, 63, 94, 0.15);
+      border-color: rgba(244, 63, 94, 0.3);
+      color: white;
+    }
+
+    /* Vault category badge */
+    .vault-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.03);
+    }
+  </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "@google/genai": "https://esm.sh/@google/genai@^1.40.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "recharts": "https://esm.sh/recharts@^3.7.0",
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.3",
+    "jspdf": "https://esm.sh/jspdf@2.5.1",
+    "jspdf-autotable": "https://esm.sh/jspdf-autotable@3.8.2"
+  }
+}
+</script>
+</head>
+
+<body class="bg-slate-950 text-slate-100 antialiased">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>

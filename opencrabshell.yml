@@ -1,0 +1,28 @@
+http:
+  routers:
+    opencrabshell:
+      rule: "Host(`{{ env "DEPLOY_HOST" }}`)"
+      entryPoints:
+        - web
+      service: opencrabshell-svc
+      middlewares:
+        - opencrabshell-redirect
+    opencrabshell-secure:
+      rule: "Host(`{{ env "DEPLOY_HOST" }}`)"
+      entryPoints:
+        - websecure
+      service: opencrabshell-svc
+      tls:
+        certResolver: letsencrypt
+
+  middlewares:
+    opencrabshell-redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+  services:
+    opencrabshell-svc:
+      loadBalancer:
+        servers:
+          - url: "http://172.17.0.1:8080"
