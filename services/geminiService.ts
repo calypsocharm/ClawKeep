@@ -548,25 +548,19 @@ export class GeminiService {
 
   private determineModel(message: string, thinkingDepth: ThinkingDepth, hasFile: boolean): string {
     const preferred = userScopeService.scopedGet('preferred_model');
-    const DEPRECATED = ['gemini-2.5-flash-lite-latest', 'gemini-2.5-flash-lite', 'gemini-3-flash-preview', 'gemini-3-pro-preview'];
-    const UPGRADE_MAP: Record<string, string> = {
-      'gemini-3-flash-preview': 'gemini-3-flash',
-      'gemini-3-pro-preview': 'gemini-3-pro',
-    };
+    const DEPRECATED = ['gemini-2.5-flash-lite-latest', 'gemini-2.5-flash-lite'];
     if (preferred && preferred !== 'DYNAMIC' && !DEPRECATED.includes(preferred)) {
       return preferred; // Could be a Gemini model or an OpenRouter model like 'anthropic/claude-sonnet-4-20250514'
     }
-    // If deprecated model was stored, auto-upgrade or reset
+    // If deprecated model was stored, clean it up
     if (preferred && DEPRECATED.includes(preferred)) {
-      const upgraded = UPGRADE_MAP[preferred] || 'DYNAMIC';
-      userScopeService.scopedSet('preferred_model', upgraded);
-      if (upgraded !== 'DYNAMIC') return upgraded;
+      userScopeService.scopedSet('preferred_model', 'DYNAMIC');
     }
     const msg = (message || "").toLowerCase();
     if (thinkingDepth === 'HIGH' || hasFile || msg.includes('organize') || msg.includes('browse') || msg.includes('tax') || msg.includes('audit')) {
-      return 'gemini-3-pro';
+      return 'gemini-3-pro-preview';
     }
-    return 'gemini-3-flash';
+    return 'gemini-3-flash-preview';
   }
 
   /** Check if model is an OpenRouter model (contains a slash like 'anthropic/claude-3.5') */
@@ -1013,7 +1007,7 @@ export class GeminiService {
       if (getApiKey()) {
         const ai = new GoogleGenAI({ apiKey: getApiKey() });
         const response = await ai.models.generateContent({
-          model: 'gemini-3-flash',
+          model: 'gemini-3-flash-preview',
           contents: prompt,
           config: { responseMimeType: "application/json" }
         });
@@ -1079,7 +1073,7 @@ export class GeminiService {
       }
 
       const ai = new GoogleGenAI({ apiKey: getApiKey() });
-      const modelName = 'gemini-3-flash';
+      const modelName = 'gemini-3-flash-preview';
 
       const config: any = {
         systemInstruction: systemPrompt,
