@@ -34,6 +34,10 @@ import {
   Bot,
   PanelLeftClose,
   PanelLeftOpen,
+  TrendingUp,
+  CandlestickChart,
+  Compass,
+  Server,
 } from 'lucide-react';
 import { AppView, GatewayStatus, UserIdentity, NavigationItem, ShellConfig, PersonaType } from '../types';
 import { gatewayService } from '../services/gatewayService';
@@ -76,6 +80,10 @@ const iconMap: Record<string, any> = {
   [AppView.ADDRESS_BOOK]: BookUser,
   [AppView.EMAIL]: Mail,
   [AppView.AGENTS]: Bot,
+  [AppView.SOLANA_TRADER]: TrendingUp,
+  [AppView.CHART]: CandlestickChart,
+  [AppView.LIVE_BROWSER]: Compass,
+  [AppView.VPS_SETUP]: Server,
 };
 
 const LobsterClawIcon = () => (

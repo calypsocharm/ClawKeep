@@ -34,18 +34,19 @@ import TelemetryPopup from './components/TelemetryPopup';
 
 // ─── Simple Trading App Views ─────────────────────────────
 enum TraderView {
-    DASHBOARD = 'dashboard',
-    TRADING = 'solana_trader',
-    CHART = 'chart',
-    CLAW = 'claw',
-    AGENTS = 'agents',
-    SETTINGS = 'settings',
-    SECRETS = 'secrets',
-    BROWSER = 'live_browser',
-    TERMINAL = 'terminal',
-    VPS_SETUP = 'vps_setup',
-    STRATEGY_SANDBOX = 'strategy_sandbox',
+    DASHBOARD = 'DASHBOARD',
+    TRADING = 'SOLANA_TRADER',
+    CHART = 'CHART',
+    CLAW = 'CLAW',
+    AGENTS = 'AGENTS',
+    SETTINGS = 'SETTINGS',
+    SECRETS = 'SECRETS',
+    BROWSER = 'LIVE_BROWSER',
+    TERMINAL = 'TERMINAL',
+    VPS_SETUP = 'VPS_SETUP',
+    STRATEGY_SANDBOX = 'STRATEGY_SANDBOX',
 }
+
 
 // ─── Auth State ───────────────────────────────────────────
 interface AuthUser {
@@ -171,16 +172,16 @@ const App: React.FC = () => {
     // ─── Sidebar Nav Config ──────────────────────────────────
     const navItems = [
         { view: AppView.DASHBOARD, label: 'Dashboard', order: 1 },
-        { view: 'solana_trader' as AppView, label: 'Trading', order: 2 },
-        { view: 'chart' as AppView, label: 'Chart', order: 3 },
+        { view: AppView.SOLANA_TRADER, label: 'Trading', order: 2 },
+        { view: AppView.CHART, label: 'Chart', order: 3 },
         { view: AppView.AGENTS, label: 'Agents', order: 4 },
-        { view: 'strategy_sandbox' as AppView, label: 'Strategies', order: 5 },
-        { view: 'live_browser' as AppView, label: 'Browser', order: 6 },
+        { view: AppView.STRATEGY_SANDBOX, label: 'Strategies', order: 5 },
+        { view: AppView.LIVE_BROWSER, label: 'Browser', order: 6 },
         { view: AppView.TERMINAL, label: 'Terminal', order: 7 },
         {
             view: AppView.SETTINGS, label: 'Settings', order: 8, children: [
                 { view: AppView.SECRETS, label: 'Vault', order: 1 },
-                { view: 'vps_setup' as AppView, label: 'VPS Setup', order: 2 },
+                { view: AppView.VPS_SETUP, label: 'VPS Setup', order: 2 },
             ]
         },
     ];

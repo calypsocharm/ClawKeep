@@ -30,6 +30,8 @@ export enum AppView {
   VPS_SETUP = 'VPS_SETUP',
   IMAGE_GEN = 'IMAGE_GEN',
   SOLANA_TRADER = 'SOLANA_TRADER',
+  CHART = 'CHART',
+  CLAW = 'CLAW',
 }
 
 export interface Question {
