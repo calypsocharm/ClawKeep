@@ -84,7 +84,9 @@ const App: React.FC = () => {
         if (saved) try { return JSON.parse(saved); } catch { }
         return {
             shellName: 'ClawKeep',
-            accentColor: '160 70% 50%', // emerald/green for trading
+            accentColor: '142 71% 45%', // Sharky emerald
+            surfaceColor: '220 40% 8%',
+            glowColor: '142 71% 45%',
             persona: 'trader' as PersonaType,
         };
     });

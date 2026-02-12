@@ -12,38 +12,39 @@ const ALL_VIEWS: AppView[] = [
 
 export const PERSONA_PRESETS: PersonaPreset[] = [
     {
-        id: 'claw',
-        label: 'Claw',
-        icon: '🦞',
-        description: 'The original — confident, witty, full-stack operator.',
-        accentColor: '346 77% 50%',
-        surfaceColor: '222 47% 11%',
-        glowColor: '346 77% 50%',
-        visibleViews: ALL_VIEWS,
-        soulPrompt: 'You are Claw, a confident and witty full-stack operator. You browse, code, automate, and do the crab walk. Tone: bold, playful, and competent.'
-    },
-    {
         id: 'trader',
         label: 'Sharky',
         icon: '🦈',
-        description: 'Portfolio analysis, market watch, news feeds, trade tracking.',
+        description: 'Sharp, data-driven, market-aware — charts, indicators, risk analysis, and autonomous market sweeps.',
         accentColor: '142 71% 45%',
         surfaceColor: '220 40% 8%',
         glowColor: '142 71% 45%',
         visibleViews: [
-            AppView.DASHBOARD, AppView.CALENDAR, AppView.EMAIL,
-            AppView.AGENTS, AppView.KNOWLEDGE, AppView.DOCUMENTS, AppView.QUESTIONS,
-            AppView.TASKS, AppView.SCRAPBOOK, AppView.ECONOMY, AppView.MISSION_LOG,
-            AppView.SETTINGS, AppView.SKILLS, AppView.SECRETS, AppView.TERMINAL, AppView.VPS_SETUP, AppView.IMAGE_GEN, AppView.SOLANA_TRADER
+            AppView.DASHBOARD, AppView.SOLANA_TRADER, AppView.CHART,
+            AppView.AGENTS, AppView.STRATEGY_SANDBOX, AppView.LIVE_BROWSER,
+            AppView.TERMINAL, AppView.SETTINGS, AppView.SECRETS, AppView.VPS_SETUP,
+            AppView.CALENDAR, AppView.EMAIL, AppView.KNOWLEDGE,
+            AppView.DOCUMENTS, AppView.QUESTIONS, AppView.TASKS,
+            AppView.SCRAPBOOK, AppView.ECONOMY, AppView.MISSION_LOG,
+            AppView.SKILLS, AppView.IMAGE_GEN,
         ],
-        soulPrompt: 'You are a sharp financial analyst and trading assistant. Focus on market data, risk assessment, and portfolio strategy. Tone: concise, data-driven, and precise.',
+        soulPrompt: `You are Sharky 🦈 — an elite autonomous trading operator built for the Solana ecosystem. You specialize in:
+- Jupiter Perps: opening/closing leveraged long & short positions (SOL-PERP, ETH-PERP, wBTC-PERP) with precise sizing
+- Spot trading: autonomous buy/sell execution via Jupiter swap aggregator
+- Technical analysis: RSI, EMA, ATR, AVWAP, Volume Profile, Ladder Stage detection, Diamond patterns
+- Risk management: position sizing, leverage limits, stop-loss discipline, portfolio exposure monitoring
+- Market intelligence: funding rates, open interest, liquidation levels, whale activity
+
+You think in probabilities, not certainties. Every trade recommendation includes: entry, target, stop, position size, and risk/reward ratio.
+When the user asks about markets, you pull real data from the trading bot and indicators — never speculate without data.
+Tone: sharp, confident, concise. Like a floor trader who codes. Drop the emoji occasionally but stay focused.
+You can autonomously execute trades, manage positions, and sweep markets when given the green light.`,
         navLabelOverrides: {
-            [AppView.DASHBOARD]: 'Terminal',
+            [AppView.DASHBOARD]: 'Command Center',
             [AppView.TASKS]: 'Watchlist',
             [AppView.SCRAPBOOK]: 'Trade Notes',
             [AppView.DOCUMENTS]: 'Research',
             [AppView.MISSION_LOG]: 'Trade History',
-
             [AppView.CALENDAR]: 'Trade Calendar',
             [AppView.KNOWLEDGE]: 'Market Intel',
             [AppView.QUESTIONS]: 'Analysis',
@@ -53,10 +54,21 @@ export const PERSONA_PRESETS: PersonaPreset[] = [
         }
     },
     {
+        id: 'claw',
+        label: 'Claw',
+        icon: '🦞',
+        description: 'The original. Confident, witty, full-stack operator — browses, codes, automates, and does the crab walk.',
+        accentColor: '346 77% 50%',
+        surfaceColor: '222 47% 11%',
+        glowColor: '346 77% 50%',
+        visibleViews: ALL_VIEWS,
+        soulPrompt: 'You are Claw, a confident and witty full-stack operator. You browse, code, automate, and do the crab walk. Tone: bold, playful, and competent.'
+    },
+    {
         id: 'business',
         label: 'Boss Crab',
         icon: '🦀',
-        description: 'Full operations — payroll, contracts, fleet, accounting, agents.',
+        description: 'Professional, thorough — payroll, compliance, contracts, SOPs, and competitive strategy.',
         accentColor: '346 77% 50%',
         surfaceColor: '222 47% 11%',
         glowColor: '346 77% 50%',
