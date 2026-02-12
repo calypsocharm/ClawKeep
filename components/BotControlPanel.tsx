@@ -134,7 +134,9 @@ const BotControlPanel: React.FC = () => {
         const retry = setTimeout(() => { gatewayService.traderStatus(); }, 3000);
         // Auto-refresh price every 15s
         tickerRef.current = setInterval(() => { gatewayService.traderStatus(); }, 15000);
-        return () => { unsub(); clearTimeout(retry); if (tickerRef.current) clearInterval(tickerRef.current); };
+        // Safety timeout: if WS never responds, drop out of loading state after 5s
+        const loadingTimeout = setTimeout(() => { setLoading(false); }, 5000);
+        return () => { unsub(); clearTimeout(retry); clearTimeout(loadingTimeout); if (tickerRef.current) clearInterval(tickerRef.current); };
     }, []);
 
     const copyAddress = () => { navigator.clipboard.writeText(publicKey); setCopied(true); setTimeout(() => setCopied(false), 2000); };
