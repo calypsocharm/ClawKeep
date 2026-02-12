@@ -4,11 +4,11 @@ import { Lock, Key, ArrowRight, AlertCircle, UserPlus, Mail, User, LogIn, Shield
 import { api } from '../services/apiService';
 
 interface LoginScreenProps {
-    onUnlock: (user: any) => void;
-    onGoToSignup: (user: any) => void;
+    onLogin: (token: string, email: string, role?: string) => void;
+    onShowOnboarding: () => void;
 }
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ onUnlock, onGoToSignup }) => {
+const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onShowOnboarding }) => {
     const [mode, setMode] = useState<'login' | 'register'>('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -24,9 +24,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onUnlock, onGoToSignup }) => 
         try {
             if (mode === 'login') {
                 const result = await api.login(email, password);
-                // Save email for convenience
+                // Save email/password for convenience
                 localStorage.setItem('claw_user_email', email);
-                onUnlock(result.user);
+                localStorage.setItem('claw_user_password', password);
+                onLogin(result.token, email, result.user?.role);
             } else {
                 if (password.length < 6) {
                     setError('Password must be at least 6 characters');
@@ -34,15 +35,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onUnlock, onGoToSignup }) => 
                     return;
                 }
                 const result = await api.register(email, password, name);
-                // Save email for convenience
                 localStorage.setItem('claw_user_email', email);
                 localStorage.setItem('claw_user_password', password);
-                // New accounts go to onboarding
-                onGoToSignup(result.user);
+                onLogin(result.token, email, result.user?.role);
             }
         } catch (err: any) {
             const msg = err?.message || 'Connection failed';
-            // Try to parse error from API response
             if (msg.includes('409')) {
                 setError('Email already registered — try logging in');
             } else if (msg.includes('401')) {
