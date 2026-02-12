@@ -521,67 +521,73 @@ class SolanaTrader {
             try {
                 this.lastCheck = new Date().toISOString();
                 const activeRules = this.rules.filter(r => r.active);
-                if (activeRules.length === 0) return;
 
-                // Get unique tokens to price-check
-                const tokens = [...new Set(activeRules.map(r => r.token))];
+                // ── Spot Rules Evaluation ────────────────────────
+                if (activeRules.length > 0) {
+                    const tokens = [...new Set(activeRules.map(r => r.token))];
 
-                for (const tokenSymbol of tokens) {
-                    const price = await this.getPrice(tokenSymbol);
-                    if (price === null) continue;
+                    for (const tokenSymbol of tokens) {
+                        const price = await this.getPrice(tokenSymbol);
+                        if (price === null) continue;
 
-                    // Evaluate rules for this token
-                    for (const rule of activeRules.filter(r => r.token === tokenSymbol)) {
-                        let triggered = false;
+                        for (const rule of activeRules.filter(r => r.token === tokenSymbol)) {
+                            let triggered = false;
 
-                        if (rule.type === 'stop-loss' && price <= rule.triggerPrice) {
-                            triggered = true;
-                        } else if (rule.type === 'take-profit' && price >= rule.triggerPrice) {
-                            triggered = true;
-                        }
-
-                        if (triggered) {
-                            this._log({
-                                type: 'rule_trigger',
-                                message: `${rule.type.toUpperCase()} triggered: ${tokenSymbol} @ $${price} (trigger: $${rule.triggerPrice})`,
-                            });
-
-                            // Execute swap
-                            const inputMint = TOKEN_MINTS[rule.token];
-                            const outputMint = TOKEN_MINTS[rule.outputToken];
-                            if (!inputMint || !outputMint) continue;
-
-                            // Get balance to determine amount
-                            let amount;
-                            if (rule.token === 'SOL') {
-                                const bal = await this.getBalance();
-                                amount = rule.action === 'sell-all' ? bal * 0.98 : bal * 0.5; // leave some SOL for fees
-                                amount = Math.floor(amount * LAMPORTS_PER_SOL);
-                            } else {
-                                // For other tokens, we'd need SPL token balance — simplified for now
-                                amount = 0;
+                            if (rule.type === 'stop-loss' && price <= rule.triggerPrice) {
+                                triggered = true;
+                            } else if (rule.type === 'take-profit' && price >= rule.triggerPrice) {
+                                triggered = true;
                             }
 
-                            if (amount > 0) {
-                                const result = await this.swap(inputMint, outputMint, amount);
-                                if (result.error) {
-                                    this._log({ type: 'error', message: `Auto-swap failed: ${result.error}` });
-                                } else {
-                                    // Deactivate rule after execution
-                                    rule.active = false;
-                                    this._saveRules();
+                            if (triggered) {
+                                this._log({
+                                    type: 'rule_trigger',
+                                    message: `${rule.type.toUpperCase()} triggered: ${tokenSymbol} @ $${price} (trigger: $${rule.triggerPrice})`,
+                                });
 
-                                    if (this.broadcastFn) {
-                                        this.broadcastFn({
-                                            type: 'TRADER_SWAP_RESULT',
-                                            ...result,
-                                        });
+                                const inputMint = TOKEN_MINTS[rule.token];
+                                const outputMint = TOKEN_MINTS[rule.outputToken];
+                                if (!inputMint || !outputMint) continue;
+
+                                let amount;
+                                if (rule.token === 'SOL') {
+                                    const bal = await this.getBalance();
+                                    amount = rule.action === 'sell-all' ? bal * 0.98 : bal * 0.5;
+                                    amount = Math.floor(amount * LAMPORTS_PER_SOL);
+                                } else {
+                                    amount = 0;
+                                }
+
+                                if (amount > 0) {
+                                    const result = await this.swap(inputMint, outputMint, amount);
+                                    if (result.error) {
+                                        this._log({ type: 'error', message: `Auto-swap failed: ${result.error}` });
+                                    } else {
+                                        rule.active = false;
+                                        this._saveRules();
+
+                                        if (this.broadcastFn) {
+                                            this.broadcastFn({
+                                                type: 'TRADER_SWAP_RESULT',
+                                                ...result,
+                                            });
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
+
+                // ── Autonomous Perps Management ──────────────────
+                if (this.perpsAutoEnabled) {
+                    try {
+                        await this._autoManagePerps();
+                    } catch (perpsErr) {
+                        console.error('[SolanaTrader] Auto-perps error:', perpsErr.message);
+                    }
+                }
+
             } catch (e) {
                 console.error('[SolanaTrader] Monitor error:', e.message);
             }
@@ -592,6 +598,90 @@ class SolanaTrader {
 
         // Then on interval
         this.monitorInterval = setInterval(check, intervalMs);
+    }
+
+    // ── Autonomous Perps Management ─────────────────────────
+    // Called each bot loop when perpsAutoEnabled is true.
+    // Manages existing positions (TP/SL) and evaluates strategies for new entries.
+    async _autoManagePerps() {
+        const perps = this._initPerps();
+        if (!perps) return;
+
+        // 1. Monitor existing positions for TP/SL
+        const { positions } = await perps.getPositions();
+        if (positions && positions.length > 0) {
+            for (const pos of positions) {
+                const pnlPct = pos.collateralUsd > 0 ? (pos.pnlUsd / pos.collateralUsd) * 100 : 0;
+                const takeProfitPct = 20;  // Close at +20% ROI
+                const stopLossPct = -15;   // Close at -15% ROI
+
+                if (pnlPct >= takeProfitPct) {
+                    this._log({
+                        type: 'perp_close',
+                        message: `🎯 Auto TP: ${pos.side.toUpperCase()} ${pos.market}-PERP at +${pnlPct.toFixed(1)}% ROI ($${pos.pnlUsd.toFixed(2)} profit)`,
+                    });
+                    const result = await perps.closePosition(pos.key);
+                    if (!result.error && this.broadcastFn) {
+                        this.broadcastFn({ type: 'TRADER_PERP_CLOSED', signature: result.signature });
+                    }
+                } else if (pnlPct <= stopLossPct) {
+                    this._log({
+                        type: 'perp_close',
+                        message: `🛑 Auto SL: ${pos.side.toUpperCase()} ${pos.market}-PERP at ${pnlPct.toFixed(1)}% ROI ($${pos.pnlUsd.toFixed(2)} loss)`,
+                    });
+                    const result = await perps.closePosition(pos.key);
+                    if (!result.error && this.broadcastFn) {
+                        this.broadcastFn({ type: 'TRADER_PERP_CLOSED', signature: result.signature });
+                    }
+                }
+            }
+        }
+
+        // 2. Evaluate strategies for new perps entries (only if < 3 open positions)
+        const openPositionCount = positions ? positions.length : 0;
+        if (openPositionCount >= 3) return; // Max 3 concurrent positions
+
+        const perpsStrategies = this.strategies.filter(s => s.autoPerps || s.name?.toLowerCase().includes('perp'));
+        if (perpsStrategies.length === 0 && this.strategies.length > 0) {
+            // If no perps-specific strategies, use the first available strategy 
+            // but only on larger timeframes to avoid noise
+            const fallback = this.strategies[0];
+            if (fallback) perpsStrategies.push(fallback);
+        }
+
+        for (const strategy of perpsStrategies.slice(0, 1)) { // Evaluate at most 1 strategy per cycle
+            try {
+                const evalResult = await this.evaluateStrategy(strategy.name, 'SOL/USDC');
+                if (!evalResult || evalResult.error) continue;
+
+                const { entrySignal, exitSignal, thinking } = evalResult;
+
+                if (entrySignal && entrySignal !== 'none') {
+                    const side = entrySignal === 'long' ? 'long' : 'short';
+                    const balance = await this.getBalance();
+                    const solPrice = await this.getSolPrice();
+                    const balanceUsd = balance * solPrice;
+
+                    // Conservative: use 5% of balance as collateral, 3× leverage
+                    const collateralUsd = Math.min(balanceUsd * 0.05, 50); // Max $50 auto-entry
+                    const autoLeverage = 3;
+
+                    if (collateralUsd >= 5) { // Min $5 collateral
+                        this._log({
+                            type: 'perp_open',
+                            message: `🤖 Auto-entry: ${side.toUpperCase()} SOL-PERP | $${collateralUsd.toFixed(2)} × ${autoLeverage}x = $${(collateralUsd * autoLeverage).toFixed(2)} | Strategy: ${strategy.name}`,
+                        });
+
+                        const result = await this.openPerp('SOL', side, collateralUsd, autoLeverage, 'SOL');
+                        if (!result.error && this.broadcastFn) {
+                            this.broadcastFn({ type: 'TRADER_PERP_OPENED', ...result });
+                        }
+                    }
+                }
+            } catch (stratErr) {
+                console.error('[SolanaTrader] Strategy eval error:', stratErr.message);
+            }
+        }
     }
 
     stop() {
@@ -624,6 +714,8 @@ class SolanaTrader {
             lastCheck: this.lastCheck,
             hasStrategies: this.strategies.length > 0,
             positionCount: this.positions.length,
+            keepAlive: this.keepAlive,
+            perpsAutoEnabled: this.perpsAutoEnabled,
         };
     }
 
